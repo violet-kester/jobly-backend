@@ -1,5 +1,7 @@
 "use strict";
 
+/** Related functions for users. */
+
 const db = require("../db");
 const bcrypt = require("bcrypt");
 const { sqlForPartialUpdate } = require("../helpers/sql");
@@ -11,18 +13,20 @@ const {
 
 const { BCRYPT_WORK_FACTOR } = require("../config.js");
 
-/** Related functions for users. */
 
 class User {
-  /** authenticate user with username, password.
+
+  /** authenticate(username, password)
    *
-   * Returns { username, first_name, last_name, email, is_admin }
+   * Authenticates user with username, password.
    *
-   * Throws UnauthorizedError is user not found or wrong password.
-   **/
+   * Returns:
+   * { username, first_name, last_name, email, is_admin }
+   *
+   * If user is not found or wrong password, throws UnauthorizedError.
+   */
 
   static async authenticate(username, password) {
-    // try to find the user first
     const result = await db.query(`
         SELECT username,
                password,
@@ -37,7 +41,6 @@ class User {
     const user = result.rows[0];
 
     if (user) {
-      // compare hashed password to a new hash from password
       const isValid = await bcrypt.compare(password, user.password);
       if (isValid === true) {
         delete user.password;
@@ -48,15 +51,19 @@ class User {
     throw new UnauthorizedError("Invalid username/password");
   }
 
-  /** Register user with data.
+  /** register({ username, password, firstName, lastName, email, isAdmin })
    *
-   * Returns { username, firstName, lastName, email, isAdmin }
+   * Registers user with data.
    *
-   * Throws BadRequestError on duplicates.
-   **/
+   * Returns:
+   * { username, firstName, lastName, email, isAdmin }
+   *
+   * If user already in database, throws BadRequestError.
+   */
 
   static async register(
-      { username, password, firstName, lastName, email, isAdmin }) {
+    { username, password, firstName, lastName, email, isAdmin }) {
+
     const duplicateCheck = await db.query(`
         SELECT username
         FROM users
@@ -98,10 +105,13 @@ class User {
     return user;
   }
 
-  /** Find all users.
+  /** findAll()
    *
-   * Returns [{ username, first_name, last_name, email, is_admin }, ...]
-   **/
+   * Finds all users.
+   *
+   * Returns:
+   * [{ username, first_name, last_name, email, is_admin }, ...]
+   */
 
   static async findAll() {
     const result = await db.query(`
@@ -117,13 +127,17 @@ class User {
     return result.rows;
   }
 
-  /** Given a username, return data about user.
+  /** get(username)
    *
-   * Returns { username, first_name, last_name, is_admin, jobs }
-   *   where jobs is { id, title, company_handle, company_name, state }
+   * Given a username, returns data about user.
    *
-   * Throws NotFoundError if user not found.
-   **/
+   * Returns:
+   * { username, first_name, last_name, is_admin, jobs }
+   * - Where jobs is:
+   *   { id, title, company_handle, company_name, state }
+   *
+   * If user not found, throws NotFoundError.
+   */
 
   static async get(username) {
     const userRes = await db.query(`
@@ -149,21 +163,25 @@ class User {
     return user;
   }
 
-  /** Update user data with `data`.
+  /** update(username, data)
    *
-   * This is a "partial update" --- it's fine if data doesn't contain
-   * all the fields; this only changes provided ones.
+   * Updates user data with.
    *
-   * Data can include:
-   *   { firstName, lastName, password, email, isAdmin }
+   * This is a "partial update."
+   * It's fine if data doesn't contain all the fields.
+   * Only changes provided fields.
    *
-   * Returns { username, firstName, lastName, email, isAdmin }
+   * Input data object can include:
+   * { firstName, lastName, password, email, isAdmin }
    *
-   * Throws NotFoundError if not found.
+   * Returns:
+   * { username, firstName, lastName, email, isAdmin }
    *
-   * WARNING: this function can set a new password or make a user an admin.
-   * Callers of this function must be certain they have validated inputs to this
-   * or a serious security risks are opened.
+   * If not found, throws NotFoundError.
+   *
+   * WARNING:
+   * This function can set a new password or make a user an admin.
+   * Be certain to validate inputs to this call or open serious security risks.
    */
 
   static async update(username, data) {
@@ -198,7 +216,14 @@ class User {
     return user;
   }
 
-  /** Delete given user from database; returns undefined. */
+  /** remove(username)
+   *
+   * Deletes given user from database.
+   *
+   * Returns: undefined
+   *
+   * If not found, throws NotFoundError.
+   */
 
   static async remove(username) {
     let result = await db.query(`
@@ -212,11 +237,18 @@ class User {
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
 
-  /** Apply for job: update db, returns undefined.
+  /** applyToJob(username, jobId)
    *
-   * - username: username applying for job
+   * Applies user for job, updates db.
+   *
+   * Input:
+   * - username: applicant username
    * - jobId: job id
-   **/
+   *
+   * Returns: undefined
+   *
+   * If no such user or job found, throws NotFoundError.
+   */
 
   static async applyToJob(username, jobId) {
     const preCheck = await db.query(`

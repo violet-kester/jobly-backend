@@ -1,7 +1,6 @@
 "use strict";
 
 const db = require("../db.js");
-const { BadRequestError, NotFoundError } = require("../expressError");
 const Company = require("./company.js");
 const {
   commonBeforeAll,
@@ -10,6 +9,7 @@ const {
   commonAfterAll,
   testJobIds,
 } = require("./_testCommon");
+const { BadRequestError, NotFoundError } = require("../expressError");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
@@ -107,11 +107,6 @@ describe("_filterWhereBuilder", function () {
 });
 
 /************************************** findAll */
-
-// NOTE: Some of the find all tests are already handled now that we're testing
-// the filter criteria at a lower level with _filterWhereBuilder.
-//
-// We've decided these tests are still useful and all should continue to pass.
 
 describe("findAll", function () {
   test("works: all", async function () {

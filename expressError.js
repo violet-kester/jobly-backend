@@ -1,9 +1,13 @@
 "use strict";
 
-/** ExpressError extends normal JS error so we can
- *  add a status when we make an instance of it.
+/** Custom error classes. */
+
+/** ExpressError
  *
- *  The error-handling middleware will return this.
+ * Extends built-in JavaScript Error class.
+ * Add a status code and message.
+ *
+ * Returned by error-handling middleware.
  */
 
 class ExpressError extends Error {
@@ -14,7 +18,7 @@ class ExpressError extends Error {
   }
 }
 
-/** 404 NOT FOUND error. */
+/** 404 - NotFoundError */
 
 class NotFoundError extends ExpressError {
   constructor(message = "Not Found") {
@@ -22,7 +26,7 @@ class NotFoundError extends ExpressError {
   }
 }
 
-/** 401 UNAUTHORIZED error. */
+/** 401 - UnauthorizedError */
 
 class UnauthorizedError extends ExpressError {
   constructor(message = "Unauthorized") {
@@ -30,7 +34,7 @@ class UnauthorizedError extends ExpressError {
   }
 }
 
-/** 400 BAD REQUEST error. */
+/** 400 - BadRequestError */
 
 class BadRequestError extends ExpressError {
   constructor(message = "Bad Request") {
@@ -38,13 +42,14 @@ class BadRequestError extends ExpressError {
   }
 }
 
-/** 403 BAD REQUEST error. */
+/** 403 - ForbiddenError */
 
 class ForbiddenError extends ExpressError {
   constructor(message = "Bad Request") {
     super(message, 403);
   }
 }
+
 
 module.exports = {
   ExpressError,

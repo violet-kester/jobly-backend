@@ -1,23 +1,28 @@
 "use strict";
 
+/** Related functions for jobs. */
+
 const db = require("../db");
-const { NotFoundError } = require("../expressError");
 const { sqlForPartialUpdate } = require("../helpers/sql");
+const { NotFoundError } = require("../expressError");
 
-
-/** Related functions for companies. */
 
 class Job {
-  /** Create a job (from data), update db, return new job data.
-   *
-   * data should be { title, salary, equity, companyHandle }
-   *
-   * Throws NotFoundError if the company does not exist.
-   *
-   * Returns { id, title, salary, equity, companyHandle }
-   **/
 
-  static async create(data) {
+  /** create({ title, salary, equity, companyHandle })
+   *
+   * Creates a job (from data), updates db, returns new job data.
+   *
+   * Input data object:
+   * { title, salary, equity, companyHandle }
+
+   * Returns:
+   * { id, title, salary, equity, companyHandle }
+   *
+   * If company does not exist, throws NotFoundError.
+   */
+
+  static async create({ title, salary, equity, companyHandle }) {
     const companyPreCheck = await db.query(`
                 SELECT handle
                 FROM companies
@@ -39,27 +44,29 @@ class Job {
             salary,
             equity,
             company_handle AS "companyHandle"`, [
-      data.title,
-      data.salary,
-      data.equity,
-      data.companyHandle,
+      title,
+      salary,
+      equity,
+      companyHandle,
     ]);
     const job = result.rows[0];
 
     return job;
   }
 
-  /** Create WHERE clause for filters, to be used by functions that query
-   * with filters.
+  /** _filterWhereBuilder({ minSalary, hasEquity, title })
    *
-   * searchFilters (all optional):
-   * - minSalary
+   * Creates WHERE clause for filters,
+   * to be used by functions that query with filters.
+   *
+   * Input searchFilters keys (all optional):
+   * - minSalarysearchFilters
    * - hasEquity
    * - title (will find case-insensitive, partial matches)
    *
-   * Returns {
-   *  where: "WHERE minSalary >= $1 AND title ILIKE $2",
-   *  vals: [10000, '%Engineer%']
+   * Returns: {
+   *   where: "WHERE minSalary >= $1 AND title ILIKE $2",
+   *   vals: [10000, '%Engineer%']
    * }
    */
 
@@ -88,17 +95,21 @@ class Job {
     return { where, vals };
   }
 
-  /** Find all jobs (optional filter on searchFilters).
+  /** findAll(searchFilters = {})
    *
-   * searchFilters (all optional):
+   * Find all jobs (with optional filters).
+   *
+   * Input searchFilters keys (all optional):
    * - minSalary
    * - hasEquity (true returns only jobs with equity > 0, other values ignored)
    * - title (will find case-insensitive, partial matches)
    *
-   * Returns [{ id, title, salary, equity, companyHandle, companyName }, ...]
-   * */
+   * Returns:
+   * [{ id, title, salary, equity, companyHandle, companyName }, ...]
+   */
 
-  static async findAll({ minSalary, hasEquity, title } = {}) {
+  static async findAll(searchFilters = {}) {
+    const { minSalary, hasEquity, title } = searchFilters;
 
     const { where, vals } = this._filterWhereBuilder({
       minSalary, hasEquity, title,
@@ -118,13 +129,17 @@ class Job {
     return jobsRes.rows;
   }
 
-  /** Given a job id, return data about job.
+  /** get(id)
    *
-   * Returns { id, title, salary, equity, companyHandle, company }
-   *   where company is { handle, name, description, numEmployees, logoUrl }
+   * Given a job id, returns data about job.
    *
-   * Throws NotFoundError if not found.
-   **/
+   * Returns:
+   * { id, title, salary, equity, companyHandle, company }
+   * - Where company is:
+   *   { handle, name, description, numEmployees, logoUrl }
+   *
+   * If not found, throws NotFoundError.
+   */
 
   static async get(id) {
     const jobRes = await db.query(`
@@ -155,16 +170,21 @@ class Job {
     return job;
   }
 
-  /** Update job data with `data`.
+  /** update(id, data)
    *
-   * This is a "partial update" --- it's fine if data doesn't contain
-   * all the fields; this only changes provided ones.
+   * Updates job data.
    *
-   * Data can include: { title, salary, equity }
+   * This is a "partial update."
+   * It's fine if data doesn't contain all the fields.
+   * Only changes provided fields.
    *
-   * Returns { id, title, salary, equity, companyHandle }
+   * Input data object can include:
+   * { title, salary, equity }
    *
-   * Throws NotFoundError if not found.
+   * Returns:
+   * { id, title, salary, equity, companyHandle }
+   *
+   * If not found, throws NotFoundError.
    */
 
   static async update(id, data) {
@@ -190,10 +210,14 @@ class Job {
     return job;
   }
 
-  /** Delete given job from database; returns undefined.
+  /** remove(id)
    *
-   * Throws NotFoundError if company not found.
-   **/
+   * Deletes given job from database.
+   *
+   * Returns: undefined.
+   *
+   * If not found, throws NotFoundError.
+   */
 
   static async remove(id) {
     const result = await db.query(
@@ -206,5 +230,6 @@ class Job {
     if (!job) throw new NotFoundError(`No job: ${id}`);
   }
 }
+
 
 module.exports = Job;

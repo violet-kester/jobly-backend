@@ -3,11 +3,12 @@
 /** Routes for jobs. */
 
 const jsonschema = require("jsonschema");
-
 const express = require("express");
-const { BadRequestError } = require("../expressError");
-const { ensureAdmin } = require("../middleware/auth");
+
 const Job = require("../models/job");
+const { ensureAdmin } = require("../middleware/auth");
+const { BadRequestError } = require("../expressError");
+
 const jobNewSchema = require("../schemas/jobNew.json");
 const jobUpdateSchema = require("../schemas/jobUpdate.json");
 const jobSearchSchema = require("../schemas/jobSearch.json");
@@ -15,13 +16,17 @@ const jobSearchSchema = require("../schemas/jobSearch.json");
 const router = express.Router({ mergeParams: true });
 
 
-/** POST / { job } => { job }
+/** POST / --- { job } => { job }
  *
- * job should be { title, salary, equity, companyHandle }
+ * AUTHORIZATION REQUIRED: admin.
  *
- * Returns { id, title, salary, equity, companyHandle }
+ * Creates a job with data.
  *
- * Authorization required: admin
+ * Input job data should be:
+ * { title, salary, equity, companyHandle }
+ *
+ * Returns created job data:
+ * { id, title, salary, equity, companyHandle }
  */
 
 router.post("/", ensureAdmin, async function (req, res, next) {
@@ -39,20 +44,23 @@ router.post("/", ensureAdmin, async function (req, res, next) {
   return res.status(201).json({ job });
 });
 
-/** GET / =>
- *   { jobs: [ { id, title, salary, equity, companyHandle, companyName }, ...] }
+/** GET / --- => { jobs: [ { ... }, { ... }, ...] }
  *
- * Can provide search filter in query:
+ * AUTHORIZATION REQUIRED: none.
+ *
+ * Can filter on optional search filter keys:
  * - minSalary
- * - hasEquity (true returns only jobs with equity > 0, other values ignored)
+ * - hasEquity (true returns only jobs with equity > 0)
  * - title (will find case-insensitive, partial matches)
-
- * Authorization required: none
+ *
+ * Returns:
+ * { jobs: [ { id, title, salary, equity, companyHandle, companyName }, ...] }
  */
 
 router.get("/", async function (req, res, next) {
   const q = req.query;
-  // arrive as strings from querystring, but we want as int/bool
+
+  // converts string data from querystring to int/bool
   if (q.minSalary !== undefined) q.minSalary = +q.minSalary;
   q.hasEquity = q.hasEquity === "true";
 
@@ -70,12 +78,16 @@ router.get("/", async function (req, res, next) {
   return res.json({ jobs });
 });
 
-/** GET /[jobId] => { job }
+/** GET /[jobId] --- => { job }
  *
- * Returns { id, title, salary, equity, company }
- *   where company is { handle, name, description, numEmployees, logoUrl }
+ * AUTHORIZATION REQUIRED: none.
  *
- * Authorization required: none
+ * Gets job data by id.
+ *
+ * Returns:
+ * { id, title, salary, equity, company }
+ * - Where company is:
+ *   { handle, name, description, numEmployees, logoUrl }
  */
 
 router.get("/:id", async function (req, res, next) {
@@ -83,14 +95,17 @@ router.get("/:id", async function (req, res, next) {
   return res.json({ job });
 });
 
-
-/** PATCH /[jobId]  { fld1, fld2, ... } => { job }
+/** PATCH /[jobId] --- { field1, field2, ... } => { job }
  *
- * Data can include: { title, salary, equity }
+ * AUTHORIZATION REQUIRED: admin.
  *
- * Returns { id, title, salary, equity, companyHandle }
+ * Patches job data.
  *
- * Authorization required: admin
+ * Input fields can be:
+ * { title, salary, equity }
+ *
+ * Returns updated job data:
+ * { id, title, salary, equity, companyHandle }
  */
 
 router.patch("/:id", ensureAdmin, async function (req, res, next) {
@@ -108,9 +123,14 @@ router.patch("/:id", ensureAdmin, async function (req, res, next) {
   return res.json({ job });
 });
 
-/** DELETE /[handle]  =>  { deleted: id }
+/** DELETE /[handle] --- => { deleted: id }
  *
- * Authorization required: admin
+ * AUTHORIZATION REQUIRED: admin.
+ *
+ * Removes job by job id.
+ *
+ * Returns:
+ * { deleted: id }
  */
 
 router.delete("/:id", ensureAdmin, async function (req, res, next) {

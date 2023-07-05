@@ -1,20 +1,26 @@
 "use strict";
 
-const db = require("../db");
-const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
-
 /** Related functions for companies. */
 
+const db = require("../db");
+const { sqlForPartialUpdate } = require("../helpers/sql");
+const { BadRequestError, NotFoundError } = require("../expressError");
+
+
 class Company {
-  /** Create a company (from data), update db, return new company data.
+
+  /** create({ handle, name, description, numEmployees, logoUrl })
    *
-   * data should be { handle, name, description, numEmployees, logoUrl }
+   * Creates a company (from data), updates db, returns new company data.
    *
-   * Returns { handle, name, description, numEmployees, logoUrl }
+   * Input data object:
+   * { handle, name, description, numEmployees, logoUrl }
    *
-   * Throws BadRequestError if company already in database.
-   * */
+   * Returns:
+   * { handle, name, description, numEmployees, logoUrl }
+   *
+   * If company already in database, throws BadRequestError.
+   */
 
   static async create({ handle, name, description, numEmployees, logoUrl }) {
     const duplicateCheck = await db.query(`
@@ -50,17 +56,19 @@ class Company {
     return company;
   }
 
-  /** Create WHERE clause for filters, to be used by functions that query
-   * with filters.
+  /** _filterWhereBuilder({ minEmployees, maxEmployees, nameLike })
    *
-   * searchFilters (all optional):
+   * Creates WHERE clause for filters,
+   * to be used by functions that query with filters.
+   *
+   * Input searchFilters keys (all optional):
    * - minEmployees
    * - maxEmployees
    * - nameLike (will find case-insensitive, partial matches)
    *
-   * Returns {
-   *  where: "WHERE num_employees >= $1 AND name ILIKE $2",
-   *  vals: [100, '%Apple%']
+   * Returns: {
+   *   where: 'WHERE num_employees >= $1 AND name ILIKE $2',
+   *   vals: [100, '%Apple%']
    * }
    */
 
@@ -90,15 +98,18 @@ class Company {
     return { where, vals };
   }
 
-  /** Find all companies (optional filter on searchFilters).
+  /** findAll(searchFilters = {})
    *
-   * searchFilters (all optional):
+   * Finds all companies (with optional filters).
+   *
+   * Input searchFilters keys (all optional):
    * - minEmployees
    * - maxEmployees
    * - nameLike (will find case-insensitive, partial matches)
    *
-   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
-   * */
+   * Returns:
+   * [{ handle, name, description, numEmployees, logoUrl }, ...]
+   */
 
   static async findAll(searchFilters = {}) {
     const { minEmployees, maxEmployees, nameLike } = searchFilters;
@@ -122,13 +133,17 @@ class Company {
     return companiesRes.rows;
   }
 
-  /** Given a company handle, return data about company.
+  /** get(handle)
    *
-   * Returns { handle, name, description, numEmployees, logoUrl, jobs }
-   *   where jobs is [{ id, title, salary, equity }, ...]
+   * Given a company handle, returns data about company.
    *
-   * Throws NotFoundError if not found.
-   **/
+   * Returns:
+   * { handle, name, description, numEmployees, logoUrl, jobs }
+   * - Where jobs is an array of job objects:
+   *   [{ id, title, salary, equity }, ...]
+   *
+   * If not found, throws NotFoundError.
+   */
 
   static async get(handle) {
     const companyRes = await db.query(`
@@ -156,16 +171,21 @@ class Company {
     return company;
   }
 
-  /** Update company data with `data`.
+  /** update(handle, data)
    *
-   * This is a "partial update" --- it's fine if data doesn't contain all the
-   * fields; this only changes provided ones.
+   * Updates company data.
    *
-   * Data can include: {name, description, numEmployees, logoUrl}
+   * This is a "partial update."
+   * It's fine if data doesn't contain all the fields.
+   * Only changes provided fields.
    *
-   * Returns {handle, name, description, numEmployees, logoUrl}
+   * Input data object can include:
+   * { name, description, numEmployees, logoUrl }
    *
-   * Throws NotFoundError if not found.
+   * Returns:
+   * { handle, name, description, numEmployees, logoUrl }
+   *
+   * If not found, throws NotFoundError.
    */
 
   static async update(handle, data) {
@@ -195,10 +215,14 @@ class Company {
     return company;
   }
 
-  /** Delete given company from database; returns undefined.
+  /** remove(handle)
    *
-   * Throws NotFoundError if company not found.
-   **/
+   * Deletes given company from database.
+   *
+   * Returns: undefined
+   *
+   * If not found, throws NotFoundError.
+   */
 
   static async remove(handle) {
     const result = await db.query(`

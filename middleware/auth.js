@@ -7,10 +7,11 @@ const { SECRET_KEY } = require("../config");
 const { UnauthorizedError } = require("../expressError");
 
 
-/** Middleware: Authenticate user.
+/** authenticateJWT(req, res, next) - authenticate user
  *
- * If a token was provided, verify it, and, if valid, store the token payload
- * on res.locals (this will include the username and isAdmin field.)
+ * If a token was provided, verifies it.
+ * If valid, stores the token payload on res.locals.
+ * (Includes the username and isAdmin fields.)
  *
  * It's not an error if no token was provided or if the token is not valid.
  */
@@ -23,16 +24,16 @@ function authenticateJWT(req, res, next) {
     try {
       res.locals.user = jwt.verify(token, SECRET_KEY);
     } catch (err) {
-      /* ignore invalid tokens (but don't store user!) */
+      /* ignore invalid tokens (but don't store user) */
     }
   }
   return next();
 
 }
 
-/** Middleware to use when they must be logged in.
+/** ensureLoggedIn(req, res, next) - require log in
  *
- * If not, raises Unauthorized.
+ * If not logged in, raises Unauthorized error.
  */
 
 function ensureLoggedIn(req, res, next) {
@@ -41,9 +42,9 @@ function ensureLoggedIn(req, res, next) {
 }
 
 
-/** Middleware to use when they be logged in as an admin user.
+/** ensureAdmin(req, res, next) - require admin
  *
- *  If not, raises Unauthorized.
+ * If not admin, raises Unauthorized error.
  */
 
 function ensureAdmin(req, res, next) {
@@ -54,10 +55,12 @@ function ensureAdmin(req, res, next) {
 
 }
 
-/** Middleware to use when they must provide a valid token & be user matching
- *  username provided as route param.
+/** ensureCorrectUserOrAdmin(req, res, next) - ensure correct user/admin
  *
- *  If not, raises Unauthorized.
+ * Ensures a valid token was provided
+ * and that user matches username provided as route param.
+ *
+ * If not, raises Unauthorized error.
  */
 
 function ensureCorrectUserOrAdmin(req, res, next) {

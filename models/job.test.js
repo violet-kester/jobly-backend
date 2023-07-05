@@ -1,6 +1,5 @@
 "use strict";
 
-const { NotFoundError, BadRequestError } = require("../expressError");
 const db = require("../db.js");
 const Job = require("./job.js");
 const {
@@ -10,6 +9,7 @@ const {
   commonAfterAll,
   testJobIds,
 } = require("./_testCommon");
+const { BadRequestError, NotFoundError } = require("../expressError");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
