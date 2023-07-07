@@ -54,7 +54,7 @@ router.post("/", ensureAdmin, async function (req, res, next) {
  * Gets all users.
  *
  * Returns:
- * { users: [ {username, firstName, lastName, email }, ... ] }
+ * { users: [{ username, firstName, lastName, email, isAdmin }, ...] }
  */
 
 router.get("/", ensureAdmin, async function (req, res, next) {
@@ -69,9 +69,8 @@ router.get("/", ensureAdmin, async function (req, res, next) {
  * Gets user data by username.
  *
  * Returns:
- * { username, firstName, lastName, isAdmin, jobs }
- * - Where jobs is:
- *   { id, title, companyHandle, companyName, state }
+ * { user: { username, firstName, lastName, email, isAdmin, applications } }
+ * - Where applications is: [ jobId1, jobId2, ...]
  */
 
 router.get("/:username", ensureCorrectUserOrAdmin, async function (req, res, next) {
@@ -87,7 +86,7 @@ router.get("/:username", ensureCorrectUserOrAdmin, async function (req, res, nex
  * { firstName, lastName, password, email }
  *
  * Returns updated user data:
- * { username, firstName, lastName, email, isAdmin }
+ * { user: { username, firstName, lastName, email, isAdmin } }
  */
 
 router.patch("/:username", ensureCorrectUserOrAdmin, async function (req, res, next) {
@@ -120,11 +119,9 @@ router.delete("/:username", ensureCorrectUserOrAdmin, async function (req, res, 
   return res.json({ deleted: req.params.username });
 });
 
-/** POST /[username]/jobs/[id] --- { state } => { application }
+/** POST /[username]/jobs/[id] --- => { application }
  *
  * AUTHORIZATION REQUIRED: admin or same user.
- *
- * TODO: Input data:
  *
  * Applies a user to a job by username and job id.
  *

@@ -26,7 +26,7 @@ const router = express.Router({ mergeParams: true });
  * { title, salary, equity, companyHandle }
  *
  * Returns created job data:
- * { id, title, salary, equity, companyHandle }
+ * { job: { id, title, salary, equity, companyHandle } }
  */
 
 router.post("/", ensureAdmin, async function (req, res, next) {
@@ -44,7 +44,7 @@ router.post("/", ensureAdmin, async function (req, res, next) {
   return res.status(201).json({ job });
 });
 
-/** GET / --- => { jobs: [ { ... }, { ... }, ...] }
+/** GET / --- => { jobs: [{ ... }, { ... }, ...] }
  *
  * AUTHORIZATION REQUIRED: none.
  *
@@ -54,7 +54,7 @@ router.post("/", ensureAdmin, async function (req, res, next) {
  * - title (will find case-insensitive, partial matches)
  *
  * Returns:
- * { jobs: [ { id, title, salary, equity, companyHandle, companyName }, ...] }
+ * { jobs: [{ id, title, salary, equity, companyHandle, companyName }, ...] }
  */
 
 router.get("/", async function (req, res, next) {
@@ -85,7 +85,7 @@ router.get("/", async function (req, res, next) {
  * Gets job data by id.
  *
  * Returns:
- * { id, title, salary, equity, company }
+ * { job: { id, title, salary, equity, company } }
  * - Where company is:
  *   { handle, name, description, numEmployees, logoUrl }
  */
@@ -105,7 +105,7 @@ router.get("/:id", async function (req, res, next) {
  * { title, salary, equity }
  *
  * Returns updated job data:
- * { id, title, salary, equity, companyHandle }
+ * { job: { id, title, salary, equity, companyHandle } }
  */
 
 router.patch("/:id", ensureAdmin, async function (req, res, next) {

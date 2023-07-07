@@ -26,7 +26,7 @@ const router = new express.Router();
  * { handle, name, description, numEmployees, logoUrl }
  *
  * Returns created company data:
- * { handle, name, description, numEmployees, logoUrl }
+ * { company: { handle, name, description, numEmployees, logoUrl } }
  */
 
 router.post("/", ensureAdmin, async function (req, res, next) {
@@ -84,7 +84,7 @@ router.get("/", async function (req, res, next) {
  * Gets company data by handle.
  *
  * Returns:
- * { handle, name, description, numEmployees, logoUrl, jobs }
+ * { company: { handle, name, description, numEmployees, logoUrl, jobs } }
  * - Where jobs is:
  *   [{ id, title, salary, equity }, ...]
  */
@@ -101,10 +101,10 @@ router.get("/:handle", async function (req, res, next) {
  * Patches company data.
  *
  * Input fields can be:
- * { name, description, numEmployees, logo_url }
+ * { name, description, numEmployees, logoUrl }
  *
  * Returns updated company data:
- * { handle, name, description, numEmployees, logo_url }
+ * { company: { handle, name, description, numEmployees, logoUrl } }
  */
 
 router.patch("/:handle", ensureAdmin, async function (req, res, next) {

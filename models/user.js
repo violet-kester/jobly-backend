@@ -21,7 +21,7 @@ class User {
    * Authenticates user with username, password.
    *
    * Returns:
-   * { username, first_name, last_name, email, is_admin }
+   * { username, firstName, lastName, email, isAdmin }
    *
    * If user is not found or wrong password, throws UnauthorizedError.
    */
@@ -37,13 +37,13 @@ class User {
         FROM users
         WHERE username = $1`, [username],
     );
-
     const user = result.rows[0];
 
     if (user) {
       const isValid = await bcrypt.compare(password, user.password);
       if (isValid === true) {
         delete user.password;
+        console.log("returned by user authenticate: ", user);
         return user;
       }
     }
@@ -63,7 +63,6 @@ class User {
 
   static async register(
     { username, password, firstName, lastName, email, isAdmin }) {
-
     const duplicateCheck = await db.query(`
         SELECT username
         FROM users
@@ -99,7 +98,6 @@ class User {
           isAdmin,
         ],
     );
-
     const user = result.rows[0];
 
     return user;
@@ -110,7 +108,7 @@ class User {
    * Finds all users.
    *
    * Returns:
-   * [{ username, first_name, last_name, email, is_admin }, ...]
+   * [{ username, firstName, lastName, email, isAdmin }, ...]
    */
 
   static async findAll() {
@@ -132,9 +130,8 @@ class User {
    * Given a username, returns data about user.
    *
    * Returns:
-   * { username, first_name, last_name, is_admin, jobs }
-   * - Where jobs is:
-   *   { id, title, company_handle, company_name, state }
+   * { username, firstName, lastName, isAdmin, applications }
+   * - Where applications is: [jobId1, jobId2, ...]
    *
    * If user not found, throws NotFoundError.
    */
@@ -149,7 +146,6 @@ class User {
         FROM users
         WHERE username = $1`, [username],
     );
-
     const user = userRes.rows[0];
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
@@ -160,6 +156,7 @@ class User {
         WHERE a.username = $1`, [username]);
 
     user.applications = userApplicationsRes.rows.map(a => a.job_id);
+
     return user;
   }
 
@@ -240,10 +237,6 @@ class User {
   /** applyToJob(username, jobId)
    *
    * Applies user for job, updates db.
-   *
-   * Input:
-   * - username: applicant username
-   * - jobId: job id
    *
    * Returns: undefined
    *
