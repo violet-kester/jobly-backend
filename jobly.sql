@@ -1,3 +1,5 @@
+/* SQL script for setting up the jobly and jobly_test databases. */
+
 \echo 'Delete and recreate jobly db?'
 \prompt 'Return for yes or control-C to cancel > ' foo
 

@@ -1,17 +1,17 @@
--- both test users have the password "password"
+/* SQL script for seeding the jobly database with initial data.*/
 
 INSERT INTO users (username, password, first_name, last_name, email, is_admin)
 VALUES ('testuser',
-        '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
+        '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q', -- "password"
         'Test',
         'User',
-        'joel@joelburton.com',
+        'testuser@mail.com',
         FALSE),
        ('testadmin',
-        '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
+        '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q', -- "password"
         'Test',
-        'Admin!',
-        'joel@joelburton.com',
+        'Admin',
+        'testadmin@mail.com',
         TRUE);
 
 INSERT INTO companies (handle,
